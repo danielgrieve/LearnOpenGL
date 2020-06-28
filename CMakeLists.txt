@@ -4,7 +4,7 @@ project(learnopengl
         DESCRIPTION "Learn OpenGL")
 
 set(CMAKE_CXX_STANDARD 17)
-set(HEADER_FILES)
+set(HEADER_FILES shader.h)
 set(SOURCE_FILES
         main.cpp
         deps/glad/src/glad.c)
@@ -13,6 +13,8 @@ add_subdirectory(deps)
 
 include_directories(deps/glad/include)
 include_directories(deps/glfw/include)
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(learnopengl ${SOURCE_FILES} ${HEADER_FILES})
 target_link_libraries(learnopengl glfw)

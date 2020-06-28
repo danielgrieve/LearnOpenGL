@@ -7,14 +7,18 @@ void process_input(GLFWwindow*);
 
 const char* vertex_shader_source = "#version 330 core\n"
                                    "layout (location = 0) in vec3 a_pos;\n"
+                                   "layout (location = 1) in vec3 a_color;\n"
+                                   "out vec3 our_color;\n"
                                    "void main() {\n"
                                    "    gl_Position = vec4(a_pos.x, a_pos.y, a_pos.z, 1.0);\n"
+                                   "    our_color = a_color;\n"
                                    "}\0";
 
 const char* fragment_shader_source = "#version 330 core\n"
                                      "out vec4 FragColor;\n"
+                                     "in vec3 our_color;\n"
                                      "void main() {\n"
-                                     "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+                                     "    FragColor = vec4(our_color, 1.0f);\n"
                                      "}\0";
 
 int main() {
@@ -80,9 +84,10 @@ int main() {
 
     // Set up vertex data and buffers
     const float vertices[] = {
-             0.0f,  0.5f, 0.0f, // top
-             0.5f, -0.5f, 0.0f, // right
-            -0.5f, -0.5f, 0.0f  // left
+            // positions         // colours
+             0.0f,  0.5f, 0.0f,  1.0f, 0.0f, 0.0f, // top
+             0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f, // right
+            -0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f // left
     };
 
     unsigned int VAO, VBO;
@@ -92,8 +97,14 @@ int main() {
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    // color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // Main loop
     while (!glfwWindowShouldClose(window)) {

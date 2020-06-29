@@ -8,6 +8,8 @@
 void framebuffer_size_callback(GLFWwindow*, int, int);
 void process_input(GLFWwindow*);
 
+float blend_amount = 1.0f;
+
 int main() {
     // GL setup
     if (!glfwInit()) {
@@ -46,11 +48,12 @@ int main() {
             1, 2, 3  // second triangle
     };
 
-    unsigned int VAO, VBO, EBO, texture;
+    unsigned int VAO, VBO, EBO, texture1, texture2;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
-    glGenTextures(1, &texture);
+    glGenTextures(1, &texture1);
+    glGenTextures(1, &texture2);
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -72,14 +75,14 @@ int main() {
     glEnableVertexAttribArray(2);
 
     // load and create texture
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glBindTexture(GL_TEXTURE_2D, texture1);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     int width, height, nr_channels;
-    unsigned char *data = stbi_load("resources/container.jpg", &width, &height, &nr_channels, 0);
+    unsigned char* data = stbi_load("resources/container.jpg", &width, &height, &nr_channels, 0);
     if (data) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -88,6 +91,24 @@ int main() {
     }
     stbi_image_free(data);
 
+    glBindTexture(GL_TEXTURE_2D, texture2);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    stbi_set_flip_vertically_on_load(true);
+    data = stbi_load("resources/awesomeface.png", &width, &height, &nr_channels, 0);
+    if (data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    stbi_image_free(data);
+
+    our_shader.use();
+    glUniform1i(glGetUniformLocation(our_shader.ID, "texture1"), 0);
+    our_shader.set_int("texture2", 1);
+
     // main loop
     while (!glfwWindowShouldClose(window)) {
         process_input(window);
@@ -95,8 +116,14 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
+
+        our_shader.set_float("blend_amount", blend_amount);
+
         our_shader.use();
-        glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
@@ -119,5 +146,15 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 void process_input(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+        blend_amount += 0.02f;
+        if (blend_amount >= 1.0f)
+            blend_amount = 1.0f;
+    } else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+        blend_amount -= 0.02f;
+        if (blend_amount <= 0.0f)
+            blend_amount = 0.0f;
     }
 }

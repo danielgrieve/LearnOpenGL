@@ -14,10 +14,11 @@ set(SOURCE_FILES
 add_subdirectory(deps)
 
 include_directories(deps/glad/include)
+include_directories(deps/glm/glm)
 include_directories(deps/glfw/include)
 include_directories(deps/stb_image/include)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(learnopengl ${SOURCE_FILES} ${HEADER_FILES})
-target_link_libraries(learnopengl glfw)
+target_link_libraries(learnopengl glfw glm)

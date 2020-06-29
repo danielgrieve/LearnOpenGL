@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <cmath>
 #include "shader.h"
 
 void framebuffer_size_callback(GLFWwindow*, int, int);
@@ -63,6 +64,10 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         our_shader.use();
+
+        float time = glfwGetTime();
+        float offset = sin(time) / 3.0f;
+        our_shader.set_float("horizontal_offset", offset);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 

@@ -126,24 +126,20 @@ int main() {
 
         our_shader.set_float("blend_amount", blend_amount);
 
+        our_shader.use();
+        glBindVertexArray(VAO);
+
         glm::mat4 trans = glm::mat4(1.0f);
         trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
         trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-
-        our_shader.use();
-        unsigned int transform_loc = glGetUniformLocation(our_shader.ID, "transform");
-        glad_glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(trans));
-
-        glBindVertexArray(VAO);
+        our_shader.set_mat4("transform", trans);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         float scale_amount = sin(glfwGetTime());
-
         trans = glm::mat4(1.0f);
         trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 0.0f));
         trans = glm::scale(trans, glm::vec3(scale_amount, scale_amount, 1.0f));
-
-        glad_glUniformMatrix4fv(transform_loc, 1, GL_FALSE, &trans[0][0]);
+        our_shader.set_mat4("transform", trans);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
